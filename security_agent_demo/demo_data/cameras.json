@@ -1,0 +1,23 @@
+[
+  {
+    "camera_id": "cam_east_01",
+    "location": "东门",
+    "status": "online",
+    "last_heartbeat": "2026-05-05 19:30:00",
+    "note": "画面稳定"
+  },
+  {
+    "camera_id": "cam_lobby_02",
+    "location": "大厅",
+    "status": "warning",
+    "last_heartbeat": "2026-05-05 19:29:10",
+    "note": "偶发丢帧，需要检查网络抖动"
+  },
+  {
+    "camera_id": "cam_warehouse_03",
+    "location": "仓库北门",
+    "status": "offline",
+    "last_heartbeat": "2026-05-05 18:42:17",
+    "note": "设备离线，建议安排重启排查"
+  }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "snapshot_id": "img_2001",
+    "camera_id": "cam_east_01",
+    "time": "2026-05-05 17:31:22",
+    "description": "抓拍到一名身穿深色外套的人员靠近东门围栏。",
+    "analysis": "目标停留约5秒后离开，未出现翻越行为。"
+  },
+  {
+    "snapshot_id": "img_2002",
+    "camera_id": "cam_lobby_02",
+    "time": "2026-05-05 18:06:10",
+    "description": "大厅区域出现人群聚集。",
+    "analysis": "聚集人数约12人，建议结合现场广播疏导。"
+  }
+]

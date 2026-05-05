@@ -1,0 +1,20 @@
+[
+  {
+    "event_id": "alert_1001",
+    "camera_id": "cam_east_01",
+    "location": "东门",
+    "event_type": "周界告警",
+    "time": "2026-05-05 17:31:20",
+    "summary": "东门连续触发三次周界告警，疑似人员靠近围栏。",
+    "clip_path": "/clips/2026-05-05/east_gate_alert_1001.mp4"
+  },
+  {
+    "event_id": "alert_1002",
+    "camera_id": "cam_lobby_02",
+    "location": "大厅",
+    "event_type": "人员聚集",
+    "time": "2026-05-05 18:06:08",
+    "summary": "大厅短时间内出现异常聚集，持续约2分钟。",
+    "clip_path": "/clips/2026-05-05/lobby_crowd_1002.mp4"
+  }
+]

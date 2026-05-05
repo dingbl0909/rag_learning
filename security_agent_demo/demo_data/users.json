@@ -1,0 +1,14 @@
+[
+  {
+    "user_id": "ops_001",
+    "name": "张伟",
+    "role": "运维工程师",
+    "permissions": ["read", "restart_device", "create_work_order", "close_alert"]
+  },
+  {
+    "user_id": "field_001",
+    "name": "李娜",
+    "role": "前场实操人员",
+    "permissions": ["read", "create_work_order"]
+  }
+]

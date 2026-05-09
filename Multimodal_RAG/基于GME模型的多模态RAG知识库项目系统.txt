@@ -1,0 +1,21 @@
+基于GME模型的多模态RAG知识库项目系统
+项目背景:
+（可以写项目的业务背景）本项目旨在构建一个能够统一理解和检索文本、图像以及图文对的智能系统。能将 文本 、图像及图文对输入转换为统一的向量表示，支持灵活的“Any2Any”跨模态检索（如文搜图、图搜文、图文搜图文等）。
+
+技术栈：LangGraph、Milvus、Dots.OCR、RAGAS、Qwen3-VL、zhipuai、vllm
+
+Sentence_transformers。
+
+项目实现：
+
+1、单文本和图片嵌入， 以及文本+ 图片对 嵌入，从而实现Any2Any。基于多模态的Agent来控制RAG最后的响应同时出现文本和图片，并保证多模态数据在一个向量空间实现搜索和索引。
+
+2、使用小红书的基于Transformer大模型dots.ocr解析PDF/PPT文档。通过算力服务器+vllm推理框架的私有化部署。基于openai库来调用dots.ocr直接加载非结构化文档（如 PDF、Word、HTML 等）。并且把图片转化为Base64格式，表格提取为Table标签形式。 采用章节段落分块 +SemanticChunker语义分块相结合的方式来解决表格或者内容跨页断裂问题。
+
+3、采用Sentence_transformers私有化部署的iic/gme-Qwen2-VL-7B-Instruct多模态嵌入模型，对图片和文本进行密集向量化。创建密集向量Dense和稀疏向量Sparse的索引。其中稀疏向量索引采用DAAT算法，控制词频饱和度参数BM25_k1，加速查询性能。稠密向量索引设置构建图时每个节点的最大邻接数M为30，efConstruction=64，提高搜索广度和精度。实现"向量+关键词"混合检索。
+
+4、实现上下文工程来提高响应速度，用Redis来保存短期上下文记忆和长期上下文记忆，并且每轮交互后，通过异步多线程任务的机制，把长期记忆上下文再次存入向量数据库中。这样可以实现短期记忆用文本摘要提取，长期上下文可以使用语义+全文混合检索的方式提取，并且设置distance阈值。保证提取上下文的精确度。
+
+5、引入ragas评估构建两层评估体系。第一层：从知识库中检索出来的doc进行Context Precision指标+ContextRecall指标评估。第二层：在输出答案之前，基于ResponseRelevancy指标+Faithfulness指标评估。每层都设置阈值，极大提高响应的准确率。
+
+6、最终还需要人工介入来审核多次评估但是都低于配置阈值的结果，人工介入采用LangGraph的Human-in-the-loop。人工介入时 interrupt节点触发中断，并在人工介入之后从中断处继续恢复工作流。

@@ -8,11 +8,12 @@ from app.models import ParsedBlock
 
 class SecurityDocumentParserDemo:
     """
-    Demo parser for:
-    Dots.OCR + OCR + document layout extraction.
+    Demo parser for Dots.OCR + layout extraction.
 
-    It reads markdown files with IMAGE_REF / TABLE_REF markers and converts them
-    into normalized parsed blocks.
+    Markdown markers:
+    - IMAGE_REF:   screenshot / figure id
+    - TABLE_REF:   table id (structured block)
+    - BASE64_REF:  simulated image payload id from OCR pipeline
     """
 
     def parse_dir(self, docs_dir: Path) -> List[ParsedBlock]:
@@ -25,7 +26,9 @@ class SecurityDocumentParserDemo:
         lines = file_path.read_text(encoding="utf-8").splitlines()
         title_stack: List[str] = []
         buffer: List[str] = []
-        media_refs: List[str] = []
+        image_refs: List[str] = []
+        table_refs: List[str] = []
+        base64_refs: List[str] = []
         blocks: List[ParsedBlock] = []
         block_no = 0
 
@@ -33,7 +36,7 @@ class SecurityDocumentParserDemo:
             nonlocal block_no
             text = "\n".join(line.strip() for line in buffer if line.strip()).strip()
             buffer.clear()
-            if not text:
+            if not text and not image_refs and not table_refs:
                 return
             block_no += 1
             blocks.append(
@@ -42,7 +45,9 @@ class SecurityDocumentParserDemo:
                     source=file_path.name,
                     title_path=" / ".join(title_stack) if title_stack else file_path.stem,
                     text=text,
-                    media_refs=list(media_refs),
+                    image_refs=list(image_refs),
+                    table_refs=list(table_refs),
+                    base64_refs=list(base64_refs),
                 )
             )
 
@@ -50,18 +55,28 @@ class SecurityDocumentParserDemo:
             line = raw.strip()
             if not line:
                 flush()
-                media_refs.clear()
+                image_refs.clear()
+                table_refs.clear()
+                base64_refs.clear()
                 continue
             if line.startswith("#"):
                 flush()
-                media_refs.clear()
+                image_refs.clear()
+                table_refs.clear()
+                base64_refs.clear()
                 level = len(line) - len(line.lstrip("#"))
                 heading = line[level:].strip()
                 title_stack[:] = title_stack[: level - 1]
                 title_stack.append(heading)
                 continue
-            if line.startswith("IMAGE_REF:") or line.startswith("TABLE_REF:"):
-                media_refs.append(line.split(":", 1)[1].strip())
+            if line.startswith("IMAGE_REF:"):
+                image_refs.append(line.split(":", 1)[1].strip())
+                continue
+            if line.startswith("TABLE_REF:"):
+                table_refs.append(line.split(":", 1)[1].strip())
+                continue
+            if line.startswith("BASE64_REF:"):
+                base64_refs.append(line.split(":", 1)[1].strip())
                 continue
             buffer.append(line)
 

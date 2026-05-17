@@ -5,6 +5,7 @@
 当用户上传一张布控告警时间线截图时，系统需要识别截图中的告警类型、设备编号、时间段和事件顺序，再结合知识库中的布控规则、算法阈值和处置规范进行联合检索。
 
 IMAGE_REF: alarm_timeline_screenshot_01
+BASE64_REF: b64_alarm_timeline_payload_01
 
 ## 误报排查建议
 

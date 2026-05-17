@@ -3,18 +3,17 @@ from __future__ import annotations
 from typing import List
 
 from app.embedding_demo import tokenize
-from app.models import AnswerCheck, RagasMetrics, RetrievalCheck, SearchHit
+from app.models import AnswerCheck, QueryMode, RagasMetrics, RetrievalCheck, SearchHit
 
 
 class EvaluationEngineDemo:
     """
-    Demo for:
-    - Corrective RAG retrieval evaluation
-    - Adaptive RAG answer evaluation
-    - RAGAS score card
+    Corrective RAG (retrieval) + Adaptive RAG (answer) + RAGAS score card.
     """
 
-    def evaluate_retrieval(self, query: str, hits: List[SearchHit]) -> RetrievalCheck:
+    MAX_REWRITE_ROUNDS = 2
+
+    def evaluate_retrieval(self, query: str, hits: List[SearchHit], query_mode: QueryMode = "text") -> RetrievalCheck:
         if not hits:
             return RetrievalCheck(
                 context_precision=0.0,
@@ -22,11 +21,15 @@ class EvaluationEngineDemo:
                 needs_rewrite=True,
                 reason="未命中相关证据，需要改写 query 并重新检索。",
             )
-        query_terms = set(tokenize(query))
-        hit_terms = set(tokenize(" ".join(hit.text for hit in hits)))
-        overlap = len(query_terms & hit_terms) / max(len(query_terms), 1)
-        precision = round(min(0.95, 0.35 + overlap * 0.6), 4)
-        recall = round(min(0.95, 0.4 + len({hit.source for hit in hits}) * 0.12), 4)
+        query_terms = set(tokenize(query)) if query.strip() else set()
+        if query_mode == "image":
+            precision = round(min(0.95, 0.5 + hits[0].hybrid_score), 4)
+            recall = round(min(0.95, 0.45 + len(hits) * 0.1), 4)
+        else:
+            hit_terms = set(tokenize(" ".join(hit.text for hit in hits)))
+            overlap = len(query_terms & hit_terms) / max(len(query_terms), 1) if query_terms else 0.5
+            precision = round(min(0.95, 0.35 + overlap * 0.6), 4)
+            recall = round(min(0.95, 0.4 + len({hit.source for hit in hits}) * 0.12), 4)
         needs_rewrite = precision < 0.55 or recall < 0.55
         reason = "检索证据足够支撑回答。" if not needs_rewrite else "召回质量偏弱，建议执行 Query 改写。"
         return RetrievalCheck(
@@ -36,8 +39,15 @@ class EvaluationEngineDemo:
             reason=reason,
         )
 
-    def rewrite_query(self, query: str) -> str:
-        return f"{query} 排查步骤 设备状态 相关截图"
+    def rewrite_query(self, query: str, route: str) -> str:
+        suffix = {
+            "alarm": "布控规则 算法阈值 误报排查",
+            "deployment": "Milvus 索引 向量维度 OCR联调",
+            "snapshot": "设备状态 联动配置 现场抓拍",
+            "device": "设备接入 接口状态 排查步骤",
+        }.get(route, "排查步骤 相关截图")
+        base = query.strip() or "根据图片定位相关知识"
+        return f"{base} {suffix}"
 
     def evaluate_answer(self, question: str, answer: str, hits: List[SearchHit]) -> AnswerCheck:
         q_terms = set(tokenize(question))

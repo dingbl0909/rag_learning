@@ -12,7 +12,7 @@
 - 对应 Dense + Sparse 混合检索
 - 对应 Redis 短期记忆 + 长期记忆回写
 - 对应 Corrective RAG + Adaptive RAG + RAGAS
-- 对应 LangGraph Human-in-the-loop 工作流
+- 对应 LangGraph Human-in-the-loop 工作流（已实现图节点与 `/resume`）
 
 ## 项目结构
 
@@ -28,6 +28,7 @@ gme_security_multimodal_demo/
 │   ├── models.py
 │   ├── parser_demo.py
 │   ├── run_example.py
+│   ├── workflow_graph.py
 │   └── workflow_demo.py
 ├── data/
 │   └── security_multimodal_docs/
@@ -51,7 +52,7 @@ gme_security_multimodal_demo/
    - `app/index_demo.py`
    - `app/memory_demo.py`
    - `app/evaluation_demo.py`
-   - `app/workflow_demo.py`
+   - `app/workflow_graph.py`
 
 ## 运行方式
 
@@ -73,4 +74,4 @@ uvicorn app.api:app --reload --port 8012
 
 ## 说明
 
-这个 Demo 的重点是帮助你理解项目，不追求外部依赖全接通。像 GME、Milvus、Redis、Dots.OCR、RAGAS 在这里都以“可解释的模块抽象”呈现，便于你在面试里讲清楚整条链路。
+详见 `docs/改造清单.md`。GME、Milvus、Redis、Dots.OCR 仍为 Mock；LangGraph 工作流与 Any-to-Any 检索模式为真实代码路径。

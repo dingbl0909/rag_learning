@@ -9,9 +9,12 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 
 from app.chunker_demo import ChapterSemanticChunkerDemo
-from app.embedding_demo import GMEEmbeddingDemo
+from app.config import AppSettings, build_embedding_encoder
+from app.embedding_demo import EmbeddingEncoder
 from app.evaluation_demo import EvaluationEngineDemo
 from app.index_demo import HybridIndexDemo
+from app.index_milvus import MilvusHybridIndex
+from app.memory_prod import RedisMilvusMemoryEngine
 from app.memory_demo import MemoryEngineDemo
 from app.models import (
     AnswerCheck,
@@ -50,14 +53,19 @@ class WorkflowState(TypedDict, total=False):
 class MultimodalSecurityGraph:
     """LangGraph workflow: route -> memory -> retrieve -> CRAG -> answer -> Adaptive -> HITL -> persist."""
 
-    def __init__(self, docs_dir: Path):
+    def __init__(self, docs_dir: Path, settings: Optional[AppSettings] = None, encoder: Optional[EmbeddingEncoder] = None):
         self.docs_dir = docs_dir
         self.parser = SecurityDocumentParserDemo()
         self.chunker = ChapterSemanticChunkerDemo()
-        self.encoder = GMEEmbeddingDemo()
+        self.settings = settings or AppSettings.from_env()
+        self.encoder = encoder or build_embedding_encoder(self.settings)
         self.evaluator = EvaluationEngineDemo()
-        self.memory = MemoryEngineDemo(encoder=self.encoder)
-        self.index: Optional[HybridIndexDemo] = None
+        self.memory = (
+            RedisMilvusMemoryEngine(encoder=self.encoder, settings=self.settings)
+            if self.settings.use_redis and self.settings.use_milvus
+            else MemoryEngineDemo(encoder=self.encoder)
+        )
+        self.index: Optional[HybridIndexDemo | MilvusHybridIndex] = None
         self.checkpointer = MemorySaver()
         self._build_index()
         self.graph = self._compile_graph()
@@ -65,7 +73,10 @@ class MultimodalSecurityGraph:
     def _build_index(self) -> None:
         parsed_blocks = self.parser.parse_dir(self.docs_dir)
         chunks = self.chunker.build_chunks(parsed_blocks)
-        self.index = HybridIndexDemo(chunks, self.encoder)
+        if self.settings.use_milvus:
+            self.index = MilvusHybridIndex(chunks, self.encoder, self.settings)
+        else:
+            self.index = HybridIndexDemo(chunks, self.encoder)
 
     def _step(self, state: WorkflowState, name: str, **updates: Any) -> dict:
         steps = list(state.get("workflow_steps") or [])

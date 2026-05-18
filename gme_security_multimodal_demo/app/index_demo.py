@@ -4,7 +4,7 @@ import math
 from collections import Counter
 from typing import List, Optional
 
-from app.embedding_demo import GMEEmbeddingDemo, tokenize
+from app.embedding_demo import EmbeddingEncoder, tokenize
 from app.models import KnowledgeChunk, QueryMode, SearchHit
 
 
@@ -17,7 +17,7 @@ class HybridIndexDemo:
     - Supports text / image / text_image query modes (Any-to-Any)
     """
 
-    def __init__(self, chunks: List[KnowledgeChunk], encoder: GMEEmbeddingDemo):
+    def __init__(self, chunks: List[KnowledgeChunk], encoder: EmbeddingEncoder):
         self.chunks = chunks
         self.encoder = encoder
         self.doc_freq = Counter()

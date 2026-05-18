@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from typing import Dict, List, Optional, Tuple
 
-from app.embedding_demo import GMEEmbeddingDemo
+from app.embedding_demo import EmbeddingEncoder
 from app.models import MemoryItem, SearchHit
 
 
@@ -16,8 +16,8 @@ class MemoryEngineDemo:
     - Long-term: vectorized summaries for semantic recall
     """
 
-    def __init__(self, encoder: Optional[GMEEmbeddingDemo] = None):
-        self.encoder = encoder or GMEEmbeddingDemo()
+    def __init__(self, encoder: EmbeddingEncoder):
+        self.encoder = encoder
         self.short_term: Dict[str, List[str]] = {}
         self.long_term: Dict[str, List[MemoryItem]] = {}
         self.query_cache: Dict[str, Tuple[List[SearchHit], str]] = {}

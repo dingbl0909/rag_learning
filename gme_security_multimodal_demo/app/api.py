@@ -19,8 +19,9 @@ def health() -> dict:
         "service": app.title,
         "version": app.version,
         "status": "ok",
-        "demo_type": "security_multimodal_rag",
+        "system_type": "security_multimodal_rag",
         "workflow": "langgraph",
+        "embedding_model": workflow.settings.gme_model_path,
     }
 
 

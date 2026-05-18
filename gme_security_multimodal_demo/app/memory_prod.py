@@ -22,10 +22,10 @@ class RedisMilvusMemoryEngine:
     def __init__(self, encoder: EmbeddingEncoder, settings: AppSettings):
         self.encoder = encoder
         self.settings = settings
-        self.redis = self._build_redis()
-        self.milvus = self._build_milvus()
         self.collection_name = settings.milvus_memory_collection
         self.alias = "security_memory"
+        self.redis = self._build_redis()
+        self.milvus = self._build_milvus()
 
     def add_user_turn(self, user_id: str, message: str) -> None:
         key = self._key("short", user_id)
